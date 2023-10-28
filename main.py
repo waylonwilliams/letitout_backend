@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify
 import os
 import base64
 from prompts import prompts
+import json
 
 main = Blueprint(__name__, "plan")
 
@@ -80,11 +81,11 @@ def audio():
 
 @main.route("/provide_logins")
 def provide_logins():
-    x = user_info.find()
+    all_user_data = user_info.find()
     users = []
-    for user in x:
+    for user in all_user_data:
+        user["_id"] = str(user["_id"])
         users.append(user)
-    print(users)
     return jsonify(users)
     # get data
     # return
