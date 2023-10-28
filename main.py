@@ -1,19 +1,25 @@
 # TO DO
-# audio from react to flask
-# write prompts for each emotion
-# create text editor page after flask has analyzed the sigh
 # database to save user journals (mongo db)
 # another option to have hume analyze your journals
 
 
-from flask import Blueprint, request, redirect
-import requests
-import json
+from flask import Blueprint, request, jsonify
 import os
 import base64
 from prompts import prompts
 
 main = Blueprint(__name__, "plan")
+
+from pymongo.mongo_client import MongoClient
+uri = "mongodb+srv://waylon:Vx9CR3sOBHQwN0uL@letitoutdb.8bxplet.mongodb.net/?retryWrites=true&w=majority"
+db_client = MongoClient(uri)
+db = db_client.main
+user_info = db.user_info
+try:
+    db_client.admin.command('ping')
+    print("\n\n\nPinged your deployment. You successfully connected to MongoDB!")
+except Exception as e:
+    print(e)
 
 
 from hume import HumeBatchClient
@@ -34,11 +40,6 @@ async def get_emotion():
         return result
 
 
-@main.route("/")
-def base():
-    return "test"
-
-
 @main.route("/audio", methods=["POST"])
 def audio():
     # gets audio from react and decodes
@@ -51,7 +52,12 @@ def audio():
     # gets emotion scores from live api
     emotions = asyncio.run(get_emotion())
     print("\n\n\n Base emotions ", emotions)
-    emotions = emotions["burst"]["predictions"][0]["emotions"]
+    if "burst" in emotions:
+        emotions = emotions["burst"]["predictions"][0]["emotions"]
+    elif "prosody" in emotions:
+        emotions = emotions["prosody"]["predictions"][0]["emotions"]
+    else:
+        emotions = [{"name": "Calmness", "score": 1}]
     print("\n\n\n", emotions)
     max_index = 0
     max_emotion = 0
@@ -71,7 +77,31 @@ def audio():
 
     return {"prompt": prompts[emotions[max_index]["name"]]}
 
-@main.route("/journal", methods=["POST"])
-def journal():
-    return
 
+@main.route("/provide_logins")
+def provide_logins():
+    x = user_info.find()
+    users = []
+    for user in x:
+        users.append(user)
+    print(users)
+    return jsonify(users)
+    # get data
+    # return
+
+
+
+
+
+
+
+@main.route("/journal_analysis") # should be just a get?
+def journal_analysis():
+    global journals
+    journals = journals.find({"user": "Waylon"})
+    print(type(journals))
+    journal_array = []
+    for i in journals:
+        journal_array.append(i)
+    print(journal_array[0], "TYPE: ", type(journal_array[0]))
+    return jsonify(journal_array[0])
