@@ -48,6 +48,7 @@ def audio():
     with open("audio.webm", "wb") as fh:
         fh.write(audio_clean)
 
+    # gets emotion scores from live api
     emotions = asyncio.run(get_emotion())
     print("\n\n\n Base emotions ", emotions)
     emotions = emotions["burst"]["predictions"][0]["emotions"]
@@ -60,7 +61,6 @@ def audio():
             max_emotion = emotions[i]["score"]
             max_index = i
     print("Max = ", emotions[max_index])
-
     if emotions[max_index]["name"] in prompts.keys():
         print("Emotion: ", emotions[max_index]["name"], "Prompt: ", prompts[emotions[max_index]["name"]])
     else:
@@ -69,7 +69,7 @@ def audio():
     # resetting for next user, should be in flask session imo
     os.remove("audio.webm")
 
-    return redirect("/")   
+    return {"prompt": prompts[emotions[max_index]["name"]]}
 
 @main.route("/journal", methods=["POST"])
 def journal():
