@@ -11,7 +11,7 @@ import requests
 import json
 import os
 import base64
-from binary import lll
+from prompts import prompts
 
 main = Blueprint(__name__, "plan")
 
@@ -66,10 +66,16 @@ def audio():
     max_index = 0
     max_emotion = 0
     for i in range(len(emotions)):
+        print(emotions[i]["name"])
         if emotions[i]["score"] > max_emotion:
             max_emotion = emotions[i]["score"]
             max_index = i
     print("Max = ", emotions[max_index])
+
+    if emotions[max_index] in prompts:
+        print("Emotion: ", emotions[max_index], "Prompt: ", prompts[emotions[max_index]])
+    else:
+        print("No prompt for", emotions[max_index])
 
     # resetting for next user, should be in flask session imo
     os.remove("predictions.json")
