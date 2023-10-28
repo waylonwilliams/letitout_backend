@@ -78,10 +78,7 @@ def audio():
     # resetting for next user, should be in flask session imo
     os.remove("audio.webm")
 
-    # should i be creating a journal in DB here?
-
     return {"prompt": prompts[emotions[max_index]["name"]]}
-
 
 @main.route("/provide_logins")
 def provide_logins():
@@ -106,8 +103,22 @@ def journal_get():
 @main.route("/add_journal", methods=["POST"])
 def add_journal():
     data = request.get_json()
+    # make a heading
+    name = ""
+    i = 0
+    while i < len(data["content"]):
+        if data["content"][i] == "<":
+            while data["content"][i] != ">":
+                i += 1
+            i += 1
+            continue
+        name += data["content"][i]
+        if len(name) >= 20:
+            break
+        i += 1
+
     doc = [
-        {"user": data["user"], "prompt": data["prompt"], "content": data["content"], "name": data["name"]}
+        {"user": data["user"], "prompt": data["prompt"], "content": data["content"], "name": name}
     ]
     journals.insert_many(doc)
     return "success"

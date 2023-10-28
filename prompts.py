@@ -45,7 +45,7 @@ prompts = {
            "Surprise (negative)": "What is making you feel uncomfortable? Write about it with self-compassion. Could you have prevented this by maintaining a calm mind?",
            "Surprise (positive)": "Write about your joy! What is making you feel good? Write about your gratitude. If this feeling is related to your goals, write about that.",
            "Sympathy": "Write about what is making you sad. Then write about how it makes you feel, without ignoring the feelings but focusing on learning from them.",
-           "Tiredness": "You are at a nice baseline right now, use this opportunity to think objectively about an issue you have been dealing with. If you can't think of anything, consider re-reading some of your journals.",
+           "Tiredness": "Reflect on what triggered these feelings of discontentment. Imagine a healthier way you could have responded to the source and imagine a situation in which you could act this way in the future.",
            "Triumph": "You've been doing a great job, write about your accomplishments you are proud of, short and long term.",
            }
 
