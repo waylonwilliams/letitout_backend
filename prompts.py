@@ -17,7 +17,7 @@ prompts = {
            "Desire": "Write about your joy! What is making you feel good? Write about your gratitude. If this feeling is related to your goals, write about that.",
            "Craving": "What is making you feel uncomfortable? Write about it with self-compassion. Could you have prevented this by maintaining a calm mind?",
            "Determination": "You are at a nice baseline right now, use this opportunity to think objectively about an issue you have been dealing with. If you can't think of anything, consider re-reading some of your journals.",
-           "Dissappointment": "Write about what is making you sad. Then write about how it makes you feel, without ignoring the feelings but focusing on learning from them.",
+           "Disappointment": "Write about what is making you sad. Then write about how it makes you feel, without ignoring the feelings but focusing on learning from them.",
            "Disgust": "Reflect on what triggered these feelings of discontentment. Imagine a healthier way you could have responded to the source and imagine a situation in which you could act this way in the future.",
            "Distress": "Reflect on what triggered these feelings of discontentment. Imagine a healthier way you could have responded to the source and imagine a situation in which you could act this way in the future.",
            "Doubt": "What is making you feel uncomfortable? Write about it with self-compassion. Could you have prevented this by maintaining a calm mind?",
