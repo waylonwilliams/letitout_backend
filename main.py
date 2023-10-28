@@ -19,10 +19,19 @@ main = Blueprint(__name__, "plan")
 from hume import HumeBatchClient
 from hume.models.config import ProsodyConfig
 from hume.models.config import BurstConfig
+from hume import HumeStreamClient, StreamSocket
+import asyncio
 
 client = HumeBatchClient("N8s5670QNccUlXE5S3uOydcR8Q2EWMP2dWGkXG0NIx4Sf86v")
 configs = [ProsodyConfig(granularity="utterance"), BurstConfig()] # this uses prosody, was more interested in sounds, can explore more tomorrow
 urls = ["audio.webm"]
+
+async def get_emotion():
+    client = HumeStreamClient("N8s5670QNccUlXE5S3uOydcR8Q2EWMP2dWGkXG0NIx4Sf86v")
+    config = BurstConfig()
+    async with client.connect([config]) as socket:
+        result = await socket.send_file("audio.webm")
+        return result
 
 
 @main.route("/")
@@ -32,37 +41,17 @@ def base():
 
 @main.route("/audio", methods=["POST"])
 def audio():
-    # ill need to process whatever data you send here
-    #data = request.json()
-    # with axios
-    #file = request.form["file"]
-    #filename = request.form["fileName"]
-    audio_b64 = request.get_json() # request.get_json()
-    audio_b64 = audio_b64[35:] # data:audio/webm;codecs=opus;base64,Gk
+    # gets audio from react and decodes
+    audio_b64 = request.get_json() 
+    audio_b64 = audio_b64[35:] 
     audio_clean = base64.b64decode(audio_b64)
     with open("audio.webm", "wb") as fh:
         fh.write(audio_clean)
-    # previously used urls https://storage.googleapis.com/hume-test-data/video/armisen-clip.mp4
 
-
-    # need to fix hume api to work with local files
-
-
-    job = client.submit_job([], configs, files=urls)
-    print(job)
-    print("Running...")
-    job.await_complete()
-    job.download_predictions("predictions.json")
-    with open("predictions.json", "r") as fh:
-        emotions = json.load(fh)
-    try:
-        emotions = emotions[0]["results"]["predictions"][0]["models"]["burst"]["grouped_predictions"][0]["predictions"][0]["emotions"]
-    except:
-        pass # sometimes prosody works, sometimes burst, so I try both
-    try:
-        emotions = emotions[0]["results"]["predictions"][0]["models"]["prosody"]["grouped_predictions"][0]["predictions"][0]["emotions"]
-    except:
-        emotions = [{'name': 'Calmness', 'score': 1}] # default to calm i feel like that makes sense
+    emotions = asyncio.run(get_emotion())
+    print("\n\n\n Base emotions ", emotions)
+    emotions = emotions["burst"]["predictions"][0]["emotions"]
+    print("\n\n\n", emotions)
     max_index = 0
     max_emotion = 0
     for i in range(len(emotions)):
@@ -72,13 +61,12 @@ def audio():
             max_index = i
     print("Max = ", emotions[max_index])
 
-    if emotions[max_index] in prompts:
-        print("Emotion: ", emotions[max_index], "Prompt: ", prompts[emotions[max_index]])
+    if emotions[max_index]["name"] in prompts.keys():
+        print("Emotion: ", emotions[max_index]["name"], "Prompt: ", prompts[emotions[max_index]["name"]])
     else:
-        print("No prompt for", emotions[max_index])
+        print("No prompt for", emotions[max_index]["name"])
 
     # resetting for next user, should be in flask session imo
-    os.remove("predictions.json")
     os.remove("audio.webm")
 
     return redirect("/")   
@@ -86,3 +74,4 @@ def audio():
 @main.route("/journal", methods=["POST"])
 def journal():
     return
+
