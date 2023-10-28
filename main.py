@@ -16,6 +16,8 @@ uri = "mongodb+srv://waylon:Vx9CR3sOBHQwN0uL@letitoutdb.8bxplet.mongodb.net/?ret
 db_client = MongoClient(uri)
 db = db_client.main
 user_info = db.user_info
+journals = db.journals
+
 try:
     db_client.admin.command('ping')
     print("\n\n\nPinged your deployment. You successfully connected to MongoDB!")
@@ -76,6 +78,8 @@ def audio():
     # resetting for next user, should be in flask session imo
     os.remove("audio.webm")
 
+    # should i be creating a journal in DB here?
+
     return {"prompt": prompts[emotions[max_index]["name"]]}
 
 
@@ -87,22 +91,37 @@ def provide_logins():
         user["_id"] = str(user["_id"])
         users.append(user)
     return jsonify(users)
-    # get data
-    # return
 
 
-
-
-
-
-
-@main.route("/journal_analysis") # should be just a get?
-def journal_analysis():
-    global journals
-    journals = journals.find({"user": "Waylon"})
-    print(type(journals))
+@main.route("/journal_get") # may need to be post to get user
+def journal_get():
+    all_journal_data = journals.find({"user": "Waylon"}) # replace with current user
     journal_array = []
-    for i in journals:
-        journal_array.append(i)
-    print(journal_array[0], "TYPE: ", type(journal_array[0]))
-    return jsonify(journal_array[0])
+    for journal in all_journal_data:
+        journal["_id"] = str(journal["_id"])
+        journal_array.append(journal)
+    return journal_array
+
+
+@main.route("/add_journal", methods=["POST"])
+def add_journal():
+    data = request.get_json()
+    doc = [
+        {"user": data["user"], "prompt": data["prompt"], "content": data["content"], "name": data["name"]}
+    ]
+    journals.insert_many(doc)
+    return "success"
+    # prompt content user name(first 20 of paragraph)
+
+
+@main.route("/journal_analysis") # may need to be post to get user
+def journal_analysis():
+    all_journal_data = journals.find({"user": "Waylon"}) # replace with current user
+    journal_array = []
+    for journal in all_journal_data:
+        journal_array.append(journal["prompt"])
+        journal_array.append(journal["content"])
+    # send to hume
+    print(journal_array)
+    journal_array = journal_array.join(". ")
+    print(journal_array)
