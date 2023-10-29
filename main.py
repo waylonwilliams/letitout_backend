@@ -7,7 +7,7 @@ from flask import Blueprint, request, jsonify
 import os
 import base64
 from prompts import prompts
-import json
+import openai
 
 main = Blueprint(__name__, "plan")
 
@@ -24,7 +24,6 @@ try:
 except Exception as e:
     print(e)
 
-
 from hume import HumeBatchClient
 from hume.models.config import ProsodyConfig
 from hume.models.config import BurstConfig
@@ -34,6 +33,9 @@ import asyncio
 client = HumeBatchClient("N8s5670QNccUlXE5S3uOydcR8Q2EWMP2dWGkXG0NIx4Sf86v")
 configs = [ProsodyConfig(granularity="utterance"), BurstConfig()] # this uses prosody, was more interested in sounds, can explore more tomorrow
 urls = ["audio.webm"]
+
+chat_key = "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"
+openai.api_key = chat_key
 
 async def get_emotion():
     client = HumeStreamClient("N8s5670QNccUlXE5S3uOydcR8Q2EWMP2dWGkXG0NIx4Sf86v")
@@ -90,13 +92,14 @@ def provide_logins():
     return jsonify(users)
 
 
-@main.route("/journal_get") # may need to be post to get user
+@main.route("/journal_get", methods=["POST"]) # may need to be post to get user
 def journal_get():
     all_journal_data = journals.find({"user": "Waylon"}) # replace with current user
     journal_array = []
     for journal in all_journal_data:
         journal["_id"] = str(journal["_id"])
         journal_array.append(journal)
+    print(journal_array)
     return journal_array
 
 
@@ -121,7 +124,7 @@ def add_journal():
         {"user": data["user"], "prompt": data["prompt"], "content": data["content"], "name": name}
     ]
     journals.insert_many(doc)
-    return "success"
+    return {"success": "true"}
     # prompt content user name(first 20 of paragraph)
 
 
@@ -130,9 +133,38 @@ def journal_analysis():
     all_journal_data = journals.find({"user": "Waylon"}) # replace with current user
     journal_array = []
     for journal in all_journal_data:
+        name = ""
+        i = 0
+        while i < len(journal["content"]):
+            if journal["content"][i] == "<":
+                while journal["content"][i] != ">":
+                    i += 1
+                i += 1
+                continue
+            name += journal["content"][i]
+            if len(name) >= 20:
+                break
+            i += 1
+        journal_array.append("Prompt:")
         journal_array.append(journal["prompt"])
-        journal_array.append(journal["content"])
-    # send to hume
+        journal_array.append("Response:")
+        journal_array.append(name)
+    # send to chat
     print(journal_array)
     journal_array = journal_array.join(". ")
     print(journal_array)
+
+
+
+    response = openai.ChatCompletion.create(
+    model="gpt-4",
+    messages=[ {
+      "role": "user",
+      "content": "Summarize this string of journal entries: "
+      } ],
+    temperature=1,
+    max_tokens=512,
+    top_p=1,
+    frequency_penalty=0,
+    presence_penalty=0
+    )
