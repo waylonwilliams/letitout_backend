@@ -37,7 +37,7 @@ client = HumeBatchClient("N8s5670QNccUlXE5S3uOydcR8Q2EWMP2dWGkXG0NIx4Sf86v")
 configs = [ProsodyConfig(granularity="utterance"), BurstConfig()] # this uses prosody, was more interested in sounds, can explore more tomorrow
 urls = ["audio.webm"]
 
-chat_key = "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"
+chat_key = "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"
 openai.api_key = chat_key
 
 async def get_emotion():
@@ -126,6 +126,33 @@ def add_journal():
     journals.insert_many(doc)
     return {"success": "true"}
     # prompt content user name(first 20 of paragraph)
+
+
+@main.route("/journal_update", methods=["POST"])
+def journal_update():
+    data = request.get_json()
+    journal_name = data["name"] # fix key
+    content = data["content"]
+    name = "" # i will make a new title
+    i = 0
+    while i < len(content):
+        if content[i] == "<":
+            while content[i] != ">":
+                i += 1
+            i += 1
+            continue
+        name += content[i]
+        if len(name) >= 20:
+            break
+        i += 1
+
+    filter = {"name": journal_name}
+    update = {"$set": {"content": content, "name": name}}
+    journals.update_one(filter, update)
+    return {"success": "true"}
+    # prompt content user name(first 20 of paragraph)
+
+
 
 
 @main.route("/journal_analysis") # post in order to get user
