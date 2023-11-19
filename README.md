@@ -32,6 +32,6 @@ We learned how to integrate modern technologies into our projects to create a ri
 
 We want to improve the journal analysis ability of our application by incorporating some kind of emotionally intelligent model rather than just base ChatGPT, we think we can do this by creating a custom model with Hume that would provide the summarization and analysis tools of ChatGPT but also include the emotional intelligence of Hume’s models.
 
-## BACKEND
+## FRONTEND
 
 Here's the link for the [frontend repo](https://github.com/apolyeti/calhacks10.0)
