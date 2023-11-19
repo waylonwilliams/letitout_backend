@@ -1,6 +1,6 @@
 # Let It Out - BACKEND
 
-View a demo [here](https://devpost.com/software/let-it-out-b2xp8u)
+View a video demo [here](https://devpost.com/software/let-it-out-b2xp8u)
 
 Project for CalHacks 10.0
 
